@@ -15,23 +15,23 @@ import javax.swing.table.DefaultTableModel;
  * @author manugallegomanuel88
  */
 public class AccesoDatos {
-    Connection conexion = null;
+    private Connection conexion = null;
     /**
      * Hay que darle de valor la direccion de nuestro host.
      */
-    String host;
+    private String host;
     /**
      * Hay que darle de valor el nombre de la BD.
      */
-    String baseDatos;
+    private String baseDatos;
     /**
      * Hay que darle de valor un nombre de usuario de la BD.
      */
-    String user;
+    private String user;
     /**
      * Haay que darle de valor el passwor del usuario.
      */
-    String pass;
+    private String pass;
 
     /**
      * Hay que introducir los parametros que vamos necesarios para hacer la conexión con la base de datos.
@@ -65,24 +65,36 @@ public class AccesoDatos {
             System.out.println("Error de borrado: " + ex.getMessage());
         }
     }
-    
-    public void select (JTable tabla1, JTextField etiqueta1){
-        DefaultTableModel modelo = (DefaultTableModel) tabla1.getModel();
+    /**
+     * Crea una consulta para hacer un insert con los parametros que se le introduce. 
+     * El primer parametro es el nombre de la tabla de la BD sobre la que queremos hacer el insert. 
+     * El primer String "campo" es el nombre del campo que queremos introducir en la tabla de la BD, el segundo String "campo" es el valor del anterior String "campo" que introduciremos.
+     * Por cada String "campo" que añadiremos tendremos que añladir otro mas con su valor.
+     * @param insertFrom Nombre de la tabla en la BD donde queremos hacer el insert.
+     * @param campo Campos que añadiremos a la tabla de la BD. Primer String nombre del campo, segundo String valor del campo.
+     */
+    public void insert (String insertFrom, String... campo) {
         try {
             conexion = DriverManager.getConnection("jdbc:mysql://"+host+"/"+baseDatos, user, pass);
-            Statement s = conexion.createStatement();
-            System.out.println("select titulo, anho, duracion from peliculas where titulo like '%"+etiqueta1.getText()+"%'");
-            ResultSet consulta = s.executeQuery("select titulo, anho, duracion from peliculas where titulo like '%"+etiqueta1.getText()+"%'");
-            while (consulta.next()) {
-                Object [] filaTabla = new Object [5];
-                filaTabla [0] = consulta.getString(1);
-                filaTabla [1] = consulta.getString(2);
-                filaTabla [2] = consulta.getString(3);
-                modelo.addRow(filaTabla);
+            String query = " insert into " + insertFrom + " (" +campo[0];
+            for (int i=2; i<campo.length; i=i+2){
+                query+= ", " + campo[i];
             }
-            conexion.close();
+            query += ") values (?";
+            for (int i=2; i<campo.length; i=i+2){
+                query += ", ?";
+            }
+            query += ")";
+            PreparedStatement preparedStmt = conexion.prepareStatement(query);
+            int a=1;
+            for(int i=1; i<campo.length; i=i+2){
+                preparedStmt.setString (a, campo[i]);
+                a++;
+            }
+            preparedStmt.execute();
+            System.out.println("Insercion realizada");
         } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("Error de inserción: " + ex.getMessage());
         }
-    }   
+    }
 }

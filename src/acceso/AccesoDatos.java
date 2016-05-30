@@ -3,12 +3,7 @@ package acceso;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -52,17 +47,19 @@ public class AccesoDatos {
      * @param deleteFrom Nombre de la tabla en la BD donde queremos hacer el delete.
      * @param condicion Campo por el que buscamos para borrar una fila. Preferible que sea una primary key.
      * @param vCondicion Valor que le daremos a "condicion".
+     * @return El número de filas borradas.
      */
-    public void delete(String deleteFrom, String condicion, String vCondicion){
+    public int delete(String deleteFrom, String condicion, String vCondicion){
         try {
             conexion = DriverManager.getConnection("jdbc:mysql://"+host+"/"+baseDatos, user, pass);
             String query = ("delete from "+deleteFrom+" where "+condicion+"='"+vCondicion+"'");
             System.out.println(query);
             PreparedStatement preparedStmt = conexion.prepareStatement(query);
-            preparedStmt.execute();
-            System.out.println("Borrado realizado");
-        } catch (SQLException ex) {
+            return preparedStmt.executeUpdate();
+            } 
+        catch (SQLException ex) {
             System.out.println("Error de borrado: " + ex.getMessage());
+            return 0;
         }
     }
     /**
@@ -72,8 +69,9 @@ public class AccesoDatos {
      * Por cada String "campo" que añadiremos tendremos que añladir otro mas con su valor.
      * @param insertFrom Nombre de la tabla en la BD donde queremos hacer el insert.
      * @param campo Campos que añadiremos a la tabla de la BD. Primer String nombre del campo, segundo String valor del campo.
+     * @return El número de filas insertadas.
      */
-    public void insert (String insertFrom, String... campo) {
+    public int insert (String insertFrom, String... campo) {
         try {
             conexion = DriverManager.getConnection("jdbc:mysql://"+host+"/"+baseDatos, user, pass);
             String query = " insert into " + insertFrom + " (" +campo[0];
@@ -91,10 +89,10 @@ public class AccesoDatos {
                 preparedStmt.setString (a, campo[i]);
                 a++;
             }
-            preparedStmt.execute();
-            System.out.println("Insercion realizada");
+            return preparedStmt.executeUpdate();
         } catch (SQLException ex) {
             System.out.println("Error de inserción: " + ex.getMessage());
+            return 0;
         }
     }
 }

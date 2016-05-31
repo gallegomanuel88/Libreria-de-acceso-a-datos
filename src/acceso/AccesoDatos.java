@@ -69,7 +69,7 @@ public class AccesoDatos {
      * Por cada String "campo" que añadiremos tendremos que añladir otro mas con su valor.
      * @param insertFrom Nombre de la tabla en la BD donde queremos hacer el insert.
      * @param campo Campos que añadiremos a la tabla de la BD. Primer String nombre del campo, segundo String valor del campo.
-     * @return El número de filas insertadas.
+     * @return El número de filas insertadas. 0 = No insertado.
      */
     public int insert (String insertFrom, String... campo) {
         try {
@@ -92,6 +92,42 @@ public class AccesoDatos {
             return preparedStmt.executeUpdate();
         } catch (SQLException ex) {
             System.out.println("Error de inserción: " + ex.getMessage());
+            return 0;
+        }
+    }
+    /**
+     * Crea una consulta para hacer un update con los parametros que se le introduce.
+     * El primer parametro es el nombre de la tabla de la BD sobre la que queremos hacer el update.
+     * El primer String "campo" es el nombre del campo que queremos actualizar en la tabla de la BD, el segundo String "campo" es el valor del anterior String "campo" que actualizaremos.
+     * Por cada String "campo" que añadiremos tendremos que añladir otro mas con su valor.
+     * @param updateFrom Nombre de la tabla en la BD donde queremos hacer el update.
+     * @param campoBusqueda Campo por el que buscamos para actualizar una fila. Preferible que sea una primary key.
+     * @param vCampoBusqueda Valor que le daremos a "vCampoBusqueda".
+     * @param campo Campos que actualizaremos en tabla de la BD. Primer String nombre del campo, segundo String valor del campo.
+     * @return El número de filas actualizadas. 0 = No actualizadas.
+     */
+    public int update(String updateFrom, String campoBusqueda, String vCampoBusqueda, String... campo){
+        try {
+            conexion = DriverManager.getConnection("jdbc:mysql://"+host+"/"+baseDatos, user, pass);
+            String query = "update " + updateFrom + " set " + campo[0] + "= ?";
+            for(int i=2; i<campo.length; i=i+2){
+                query += ", " + campo[i] + "= ?";
+            }
+            query += " where " +  campoBusqueda + "= ?";
+            for (int i=1; i<campo.length; i=i+2){
+                
+            }
+            PreparedStatement preparedStmt = conexion.prepareStatement(query);
+            int a=1;
+            for(int i=1; i<campo.length; i=i+2){
+                preparedStmt.setString (a, campo[i]);
+                a++;
+            } 
+            preparedStmt.setString (a, vCampoBusqueda);
+            System.out.println("Actualización realizada");
+            return preparedStmt.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Error de Actualización: " + ex.getMessage());
             return 0;
         }
     }
